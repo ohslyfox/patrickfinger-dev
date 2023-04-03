@@ -1,20 +1,16 @@
 import {
     Instance,
     Instances,
-    useFBX,
     useGLTF,
-    useTexture,
 } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { ColorLerp, ColorLerpProp, rainbowColors } from "./util/colorLerp";
 import { map } from "./util/util";
-import * as THREE from "three";
-import { Textures } from "./util/types";
 
 const particlesPerLoop = 7;
-const particleDepth = 12;
-const zGapDistancePerLoop = 20;
+const particleDepth = 10;
+const zGapDistancePerLoop = 40;
 const numHelixes = 3;
 const particleCount = particlesPerLoop * particleDepth * numHelixes;
 
@@ -60,7 +56,6 @@ const getStartingPoints = (): ParticleData[] => {
             }
         }
     }
-    console.log(res);
     return res;
 };
 
@@ -68,14 +63,11 @@ export const Particle = (data: ParticleData & ColorLerpProp) => {
     const ref = useRef<any>(null!);
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
-        const constant = map(data.depth, 0, particleDepth, 0.1, 4);
-        const scale =
-            data.z / 100 + (constant / 3) * Math.cos(constant + t / 3);
-        const scales = map(data.z, 20, 300, 0.005, 0.02);
+        const scale = map(data.z, 20, 300, 0.003, 0.022);
 
         ref.current.rotation.x = Math.PI / 2;
-        ref.current.rotation.y = scale;
-        ref.current.scale.setScalar(scales);
+        ref.current.rotation.y = Math.sin(data.y + data.x);
+        ref.current.scale.setScalar(scale);
         ref.current.color.set(
             `rgb(${data.colorLerp.color.r},${data.colorLerp.color.g},${data.colorLerp.color.b})`
         );
@@ -90,7 +82,6 @@ export const Particle = (data: ParticleData & ColorLerpProp) => {
 export const Particles = () => {
     const mesh = useRef<any>(null!);
     const glf = useGLTF("./star-model.glb") as any;
-    console.log(glf);
     const points = useMemo(() => getStartingPoints(), []);
     const colorLerp = useMemo(() => new ColorLerp(rainbowColors), []);
 
