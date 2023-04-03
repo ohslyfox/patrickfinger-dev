@@ -89,7 +89,7 @@ export const Particle = (data: ParticleData & ColorLerpProp) => {
 
 export const Particles = () => {
     const mesh = useRef<any>(null!);
-    const glf = useGLTF("./star.glb") as any;
+    const glf = useGLTF("./star-model.glb") as any;
     console.log(glf);
     const points = useMemo(() => getStartingPoints(), []);
     const colorLerp = useMemo(() => new ColorLerp(rainbowColors), []);
