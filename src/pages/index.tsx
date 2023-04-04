@@ -7,21 +7,13 @@ import { Particles } from "../dynamic-background/Particles";
 
 const DynamicBackground = () => {
     const cam = useRef<Three.PerspectiveCamera>(null!);
-    const offset = useMemo(() => Math.random() * 400, []);
-
-    useFrame((state) => {
-        const t = offset + state.clock.getElapsedTime();
-        cam.current.rotation.x = Math.cos(t / 200);
-        cam.current.rotation.y = Math.sin(t / 200);
-    });
-
     return (
         <>
             <PerspectiveCamera
                 ref={cam}
                 makeDefault
                 position={[0, 0, 0]}
-                fov={75}
+                fov={50}
                 near={0.1}
                 far={1000}
             >

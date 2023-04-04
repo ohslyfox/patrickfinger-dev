@@ -1,12 +1,12 @@
-import {
-    Instance,
-    Instances,
-    useGLTF,
-} from "@react-three/drei";
+import { Instance, Instances, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
-import { ColorLerp, ColorLerpProp, rainbowColors } from "./util/colorLerp";
-import { map } from "./util/util";
+import {
+    ColorLerp,
+    ColorLerpProp,
+    pastelRainbowColors,
+} from "./util/colorLerp";
+import { map, shadeColor } from "./util/util";
 
 const particlesPerLoop = 7;
 const particleDepth = 10;
@@ -18,10 +18,14 @@ const PI_2 = Math.PI * 2;
 
 interface ParticleData {
     key: string;
-    depth: number;
     x: number;
     y: number;
     z: number;
+    metadata: {
+        helix: number;
+        depth: number;
+        particle: number;
+    };
 }
 
 const getStartingPoints = (): ParticleData[] => {
@@ -47,11 +51,15 @@ const getStartingPoints = (): ParticleData[] => {
 
                 // use polar coordinates to create a 3-tuple representing a single particle's location
                 res.push({
-                    key: `${i + z + x}`,
+                    key: `${i},${z},${x}`,
                     x: (approachZ / 15) * -Math.cos(offset + angle), // intentional negative to reflect the helix
                     y: (approachZ / 15) * Math.sin(offset + angle),
                     z: approachZ,
-                    depth: z - 1,
+                    metadata: {
+                        helix: i,
+                        depth: z,
+                        particle: x,
+                    },
                 });
             }
         }
@@ -63,13 +71,28 @@ export const Particle = (data: ParticleData & ColorLerpProp) => {
     const ref = useRef<any>(null!);
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
-        const scale = map(data.z, 20, 300, 0.003, 0.022);
+        const timeScalingConstant = 1;
+        const scaleDamperConstant = 3;
+        const scalingConstant = map(data.z, 20, 300, 0.003, 0.022);
+        const intermediateScale =
+            -1 *
+            scalingConstant *
+            (1 +
+                scalingConstant * data.metadata.particle +
+                Math.sin(t / timeScalingConstant + data.metadata.depth));
+        const scale =
+            1.2 * scalingConstant + intermediateScale / scaleDamperConstant;
+
+        const shadedColor = shadeColor(
+            data.colorLerp.color,
+            map(scale, 0, 0.1, -50, 90)
+        );
 
         ref.current.rotation.x = Math.PI / 2;
         ref.current.rotation.y = Math.sin(data.y + data.x);
         ref.current.scale.setScalar(scale);
         ref.current.color.set(
-            `rgb(${data.colorLerp.color.r},${data.colorLerp.color.g},${data.colorLerp.color.b})`
+            `rgb(${shadedColor.r},${shadedColor.g},${shadedColor.b})`
         );
     });
     return (
@@ -83,7 +106,7 @@ export const Particles = () => {
     const mesh = useRef<any>(null!);
     const glf = useGLTF("./star-model.glb") as any;
     const points = useMemo(() => getStartingPoints(), []);
-    const colorLerp = useMemo(() => new ColorLerp(rainbowColors), []);
+    const colorLerp = useMemo(() => new ColorLerp(pastelRainbowColors), []);
 
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
@@ -110,7 +133,7 @@ export const Particles = () => {
                         x={p.x}
                         y={p.y}
                         z={p.z}
-                        depth={p.depth}
+                        metadata={p.metadata}
                         key={p.key}
                         colorLerp={colorLerp}
                     />

@@ -1,3 +1,9 @@
+export interface TrimmedColor {
+  r: number;
+  g: number;
+  b: number;
+}
+
 export const lerp = (start: number, end: number, t: number): number => {
   return start * (1 - t) + end * t;
 };
@@ -22,3 +28,11 @@ export const mapAndBound = (
   const val = map(input, y1, y2, y3, y4);
   return Math.max(y3, Math.min(y4, val));
 };
+
+export const shadeColor = (color: TrimmedColor, percent: number): TrimmedColor => {
+  return {
+    r: Math.round(Math.max(0, Math.min(color.r * (100 + percent) / 100, 255))),
+    g: Math.round(Math.max(0, Math.min(color.g * (100 + percent) / 100, 255))),
+    b: Math.round(Math.max(0, Math.min(color.b * (100 + percent) / 100, 255)))
+  }
+}

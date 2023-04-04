@@ -1,11 +1,5 @@
 import { Color } from "three";
-import { lerp } from "./util";
-
-export interface TrimmedColor {
-  r: number;
-  g: number;
-  b: number;
-}
+import { TrimmedColor, lerp } from "./util";
 
 export const rainbowColors: TrimmedColor[] = [
   { r: 255, g: 0, b: 0 },
@@ -14,6 +8,15 @@ export const rainbowColors: TrimmedColor[] = [
   { r: 0, g: 255, b: 255 },
   { r: 75, g: 25, b: 255 },
   { r: 255, g: 0, b: 255 },
+];
+
+export const pastelRainbowColors: TrimmedColor[] = [
+  { r: 255, g: 100, b: 100 },
+  { r: 255, g: 255, b: 100 },
+  { r: 100, g: 255, b: 100 },
+  { r: 100, g: 255, b: 255 },
+  { r: 175, g: 125, b: 255 },
+  { r: 255, g: 100, b: 255 },
 ];
 
 export interface ColorLerpProp {
