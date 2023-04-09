@@ -89,7 +89,7 @@ export const Particle = (data: ParticleData & ColorLerpProp) => {
         );
 
         ref.current.rotation.x = Math.PI / 2;
-        ref.current.rotation.y = Math.sin(data.y + data.x);
+        ref.current.rotation.y = data.metadata.particle + t / 30;
         ref.current.scale.setScalar(scale);
         ref.current.color.set(
             `rgb(${shadedColor.r},${shadedColor.g},${shadedColor.b})`
@@ -107,7 +107,6 @@ export const Particles = () => {
     const glf = useGLTF("./star-model.glb") as any;
     const points = useMemo(() => getStartingPoints(), []);
     const colorLerp = useMemo(() => new ColorLerp(pastelRainbowColors), []);
-
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
         colorLerp.step();
@@ -120,9 +119,8 @@ export const Particles = () => {
     const zTranslation = -zGapDistancePerLoop * particleDepth - 10;
 
     return (
-        <group position={[0, 0, zTranslation]} receiveShadow>
+        <group ref={mesh} position={[0, 0, zTranslation]} receiveShadow>
             <Instances
-                ref={mesh}
                 limit={particleCount}
                 range={particleCount}
                 geometry={glf.nodes.Star.geometry}
