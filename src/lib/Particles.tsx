@@ -81,7 +81,7 @@ export const Particle = (data: ParticleData & ColorLerpProp) => {
                 scalingConstant * data.metadata.particle +
                 Math.sin(t / timeScalingConstant + data.metadata.depth));
         const scale =
-            1.2 * scalingConstant + intermediateScale / scaleDamperConstant;
+            1.4 * scalingConstant + intermediateScale / scaleDamperConstant;
 
         const shadedColor = shadeColor(
             data.colorLerp.color,

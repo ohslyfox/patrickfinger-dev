@@ -32,8 +32,9 @@ export class ColorLerp {
 
   constructor(colors: TrimmedColor[], lerpAmt = 0.001) {
     this.colors = colors;
-    this.currentColor = new Color(colors[0].r, colors[0].g, colors[0].b);
-    this.idx = 0;
+    const idx = Math.floor(Math.random() * (colors.length - 1));
+    this.currentColor = new Color(colors[idx].r, colors[idx].g, colors[idx].b);
+    this.idx = idx;
     this.lerpVal = 0;
     this.lerpAmt = lerpAmt;
   }

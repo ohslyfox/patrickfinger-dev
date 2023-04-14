@@ -64,14 +64,20 @@ export default function FlatClickText(opts: FlatClickTextOps) {
                 material-transparent={true}
                 material-roughness={0.1}
                 material-metalness={0.1}
+                castShadow={true}
+                receiveShadow={true}
             >
                 {opts.displayText}
-
-                <meshBasicMaterial
+                <meshStandardMaterial
                     attach="material"
                     color={isHovered ? opts.color.hovered : opts.color.default}
                     opacity={opts.opacity}
                     transparent={true}
+                    depthTest={true}
+                    roughness={0.9}
+                    metalness={0.3}
+                    displacementScale={0.1}
+                    displacementBias={0.05}
                 />
             </AnimatedText>
         </group>
