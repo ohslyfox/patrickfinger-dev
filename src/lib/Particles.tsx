@@ -1,12 +1,8 @@
 import { Instance, Instances, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
-import {
-    ColorLerp,
-    ColorLerpProp,
-    pastelRainbowColors,
-} from "./util/colorLerp";
-import { map, shadeColor } from "./util/util";
+import { ColorLerp, pastelRainbowColors } from "./util/colorLerp";
+import { TrimmedColor, map, shadeColor } from "./util/util";
 
 const particlesPerLoop = 7;
 const particleDepth = 10;
@@ -67,7 +63,7 @@ const getStartingPoints = (): ParticleData[] => {
     return res;
 };
 
-export const Particle = (data: ParticleData & ColorLerpProp) => {
+export const Particle = (data: ParticleData & { color: TrimmedColor }) => {
     const ref = useRef<any>(null!);
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
@@ -83,10 +79,7 @@ export const Particle = (data: ParticleData & ColorLerpProp) => {
         const scale =
             1.4 * scalingConstant + intermediateScale / scaleDamperConstant;
 
-        const shadedColor = shadeColor(
-            data.colorLerp.color,
-            map(scale, 0, 0.1, -50, 90)
-        );
+        const shadedColor = shadeColor(data.color, map(scale, 0, 0.1, -50, 90));
 
         ref.current.rotation.x = Math.PI / 2;
         ref.current.rotation.y = data.metadata.particle + t / 30;
@@ -133,7 +126,7 @@ export const Particles = () => {
                         z={p.z}
                         metadata={p.metadata}
                         key={p.key}
-                        colorLerp={colorLerp}
+                        color={colorLerp.color}
                     />
                 ))}
             </Instances>
