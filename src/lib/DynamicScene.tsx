@@ -1,16 +1,23 @@
-import { CameraControls, PerspectiveCamera } from "@react-three/drei";
+import { PerspectiveCamera } from "@react-three/drei";
 import { useRef } from "react";
 import { Particles } from "./Particles";
 import { PerspectiveCamera as THREEPerspectiveCamera } from "three";
 import TextColumnGroup from "./TextColumnGroup";
 import { useFrame } from "@react-three/fiber";
 import { map } from "./util/util";
+import AdminControls from "./AdminControls";
 
-export default function DynamicScene() {
+interface Props {
+    adminEnabled: boolean;
+}
+
+export default function DynamicScene({ adminEnabled }: Props) {
     const cam = useRef<THREEPerspectiveCamera>(null!);
     const offset = 1_000 * Math.random();
 
     useFrame((state) => {
+        if (adminEnabled) return;
+
         const t = state.clock.elapsedTime + offset;
         const timeScalingConstant = 10;
         const time = t / timeScalingConstant;
@@ -18,7 +25,7 @@ export default function DynamicScene() {
         const x = radius * Math.cos(time);
         const y = radius * Math.sin(time);
         cam.current.lookAt(0, 0, -390);
-        cam.current.position.set(x, y, 0);
+        cam.current.position.set(x, y, radius);
     });
 
     return (
@@ -30,6 +37,7 @@ export default function DynamicScene() {
                 near={0.1}
                 far={1000}
             >
+                <AdminControls enabled={adminEnabled} />
                 <ambientLight intensity={0.7} />
                 <pointLight
                     color="#ffffff"

@@ -1,5 +1,5 @@
 import { Text } from "@react-three/drei";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useSpring, animated } from "@react-spring/three";
 
 export interface FlatClickTextOps {
