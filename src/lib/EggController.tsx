@@ -14,9 +14,9 @@ interface Props {
 }
 
 export default function EggController({ keyMapping }: Props) {
-    let keyString = "";
-
     useEffect(() => {
+        let keyString = "";
+
         const handleCheckKeyMapping = (str: string): void => {
             const match = keyMapping[str];
             if (!match) return;
