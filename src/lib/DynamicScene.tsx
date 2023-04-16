@@ -2,10 +2,10 @@ import { PerspectiveCamera } from "@react-three/drei";
 import { useRef } from "react";
 import { Particles } from "./Particles";
 import { PerspectiveCamera as THREEPerspectiveCamera } from "three";
-import TextColumnGroup from "./TextColumnGroup";
 import { useFrame } from "@react-three/fiber";
 import { map } from "./util/util";
 import AdminControls from "./AdminControls";
+import FadingTextColumnGroup from "./FadingTextColumnGroup";
 
 interface Props {
     adminEnabled: boolean;
@@ -46,7 +46,7 @@ export default function DynamicScene({ adminEnabled }: Props) {
                     position={[0, 0, 0]}
                 />
                 <Particles />
-                <TextColumnGroup
+                <FadingTextColumnGroup
                     textArray={[
                         { displayText: "résumé", url: "./resume.pdf" },
                         {
