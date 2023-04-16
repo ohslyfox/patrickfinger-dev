@@ -39,7 +39,7 @@ export default function EggController({ keyMapping }: Props) {
         return () => {
             window.removeEventListener("keyup", handleKeyUp);
         };
-    }, []);
+    }, [keyMapping]);
 
     return null;
 }

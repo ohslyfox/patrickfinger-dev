@@ -1,4 +1,9 @@
-import { redirect } from "next/navigation";
-export default async function Resume() {
-    redirect("./resume.pdf");
+import { useEffect } from "react";
+
+export default function ResumeRedirect() {
+    useEffect(() => {
+        window.location.assign("./resume.pdf");
+    }, []);
+
+    return <></>;
 }

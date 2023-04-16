@@ -1,4 +1,9 @@
-import { redirect } from "next/navigation";
-export default async function Resume() {
-    redirect("https://slyfox.lol");
+import { useEffect } from "react";
+
+export default function LolRedirect() {
+    useEffect(() => {
+        window.location.assign("https://slyfox.lol");
+    }, []);
+
+    return <></>;
 }
