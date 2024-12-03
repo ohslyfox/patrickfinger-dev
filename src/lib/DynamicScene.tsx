@@ -55,7 +55,7 @@ export default function DynamicScene({ adminEnabled }: Props) {
                         },
                         {
                             displayText: "linkedin",
-                            url: "https://www.linkedin.com/in/patrick-finger-50ab75132",
+                            url: "https://www.linkedin.com/in/patrick-f-50ab75132",
                         },
                     ]}
                     position={{ x: 0, y: 0, z: -60 }}
