@@ -38,13 +38,7 @@ export default function DynamicScene({ adminEnabled }: Props) {
                 far={1000}
             >
                 <AdminControls enabled={adminEnabled} />
-                <ambientLight intensity={0.7} />
-                <pointLight
-                    color="#ffffff"
-                    intensity={0.7}
-                    distance={300}
-                    position={[0, 0, 0]}
-                />
+                <ambientLight intensity={3} />
                 <Particles />
                 <FadingTextColumnGroup
                     textArray={[
