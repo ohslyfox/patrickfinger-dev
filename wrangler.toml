@@ -1,0 +1,6 @@
+name = "patrickfinger-dev"
+pages_build_output_dir = "./out"
+
+[vars]
+NODE_VERSION = "18.18.2"
+PNPM_VERSION = "9.13.2"
