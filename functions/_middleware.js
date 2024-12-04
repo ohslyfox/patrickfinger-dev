@@ -1,4 +1,4 @@
-export async function onRequest(context) {
+export function onRequest(context) {
     try {
         const userAgent = context.request.headers.get("User-Agent") || "";
         const isMobile = /Mobi/i.test(userAgent);
@@ -7,7 +7,7 @@ export async function onRequest(context) {
                 status: 301,
             });
         }
-        return await context.next();
+        return context.next();
     } catch (err) {
         return new Response(`${err.message}`, { status: 500 });
     }
