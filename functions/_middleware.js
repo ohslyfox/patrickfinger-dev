@@ -1,7 +1,7 @@
 export function onRequest(context) {
     try {
         if (/Mobi/i.test(context.request.headers.get("User-Agent") || "")) {
-            return Response.redirect(new URL("https://m.patrickfinger.dev"), 301);
+            return Response.redirect(new URL("https://m.patrickfinger.dev"));
         }
         return context.next();
     } catch (err) {
