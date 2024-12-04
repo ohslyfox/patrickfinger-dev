@@ -6,9 +6,9 @@ export function middleware(request: NextRequest) {
   if (isMobile) {
     return NextResponse.redirect(new URL("https://m.patrickfinger.dev"));
   }
+  return NextResponse.next();
 }
 
-
 export const config = {
-  matcher: '/',
+  matcher: "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
 }
