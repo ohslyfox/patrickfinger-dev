@@ -85,7 +85,7 @@ export default function FadingTextColumnGroup(props: Props) {
                 />
             );
         });
-    }, [props.textArray, props.position, opacity]);
+    }, [props.textArray, props.position, opacity, columnOffset]);
 
     return <>{textElements}</>;
 }
