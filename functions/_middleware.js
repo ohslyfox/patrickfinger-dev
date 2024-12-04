@@ -1,8 +1,6 @@
 export function onRequest(context) {
     try {
-        const userAgent = context.request.headers.get("User-Agent") || "";
-        const isMobile = /Mobi/i.test(userAgent);
-        if (isMobile) {
+        if (/Mobi/i.test(context.request.headers.get("User-Agent") || "")) {
             return new Response(new URL("https://m.patrickfinger.dev"), {
                 status: 301,
             });
