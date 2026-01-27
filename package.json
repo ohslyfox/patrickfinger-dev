@@ -10,14 +10,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@react-spring/core": "^9.7.2",
+    "@react-spring/core": "^9.7.5",
     "@react-spring/three": "^9.7.5",
-    "@react-three/drei": "^9.61.4",
-    "@react-three/fiber": "^8.12.0",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@types/node": "18.15.11",
     "@types/react": "18.0.31",
     "@types/react-dom": "18.0.11",
-    "@types/three": "^0.150.1",
+    "@types/three": "^0.150.2",
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "next": "15.0.3",
@@ -25,5 +25,6 @@
     "react-dom": "18.2.0",
     "three": "0.159.0",
     "typescript": "5.0.3"
-  }
+  },
+  "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264"
 }
