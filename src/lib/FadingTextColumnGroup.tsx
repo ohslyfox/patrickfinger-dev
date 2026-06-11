@@ -33,7 +33,7 @@ export default function FadingTextColumnGroup(props: Props) {
     });
 
     useFrame((state) => {
-        tRef.current = state.clock.elapsedTime;
+        tRef.current = state.elapsed;
         if (movementTime === 0) {
             setMovementTime(tRef.current);
         }
