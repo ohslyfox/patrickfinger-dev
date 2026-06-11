@@ -66,7 +66,7 @@ const getStartingPoints = (): ParticleData[] => {
 export const Particle = (data: ParticleData & { color: TrimmedColor }) => {
     const ref = useRef<any>(null!);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime();
+        const t = state.elapsed;
         const timeScalingConstant = 1;
         const scaleDamperConstant = 3;
         const scalingConstant = map(data.z, 20, 300, 0.003, 0.022);
@@ -101,7 +101,7 @@ export const Particles = () => {
     const points = useMemo(() => getStartingPoints(), []);
     const colorLerp = useMemo(() => new ColorLerp(pastelRainbowColors), []);
     useFrame((state) => {
-        const t = state.clock.getElapsedTime();
+        const t = state.elapsed;
         colorLerp.step();
 
         mesh.current.rotation.z = t / 30;

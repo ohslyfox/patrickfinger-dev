@@ -1,5 +1,5 @@
 import { PerspectiveCamera } from "@react-three/drei";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Particles } from "./Particles";
 import { PerspectiveCamera as THREEPerspectiveCamera } from "three";
 import { useFrame } from "@react-three/fiber";
@@ -13,19 +13,19 @@ interface Props {
 
 export default function DynamicScene({ adminEnabled }: Props) {
     const cam = useRef<THREEPerspectiveCamera>(null!);
-    const offset = 1_000 * Math.random();
+    const [offset] = useState(() => 1_000 * Math.random());
 
     useFrame((state) => {
         if (adminEnabled) return;
 
-        const t = state.clock.elapsedTime + offset;
+        const t = state.elapsed + offset;
         const timeScalingConstant = 10;
         const time = t / timeScalingConstant;
         const radius = map(Math.sin(time) + Math.cos(time), -1.5, 1.5, -5, 5);
         const x = radius * Math.cos(time);
         const y = radius * Math.sin(time);
         cam.current.lookAt(0, 0, -390);
-        cam.current.position.set(x, y, radius);
+        cam.current.position.set(x, y, radius - 23);
     });
 
     return (
@@ -34,7 +34,7 @@ export default function DynamicScene({ adminEnabled }: Props) {
                 ref={cam}
                 position={[0, 0, 0]}
                 fov={70}
-                near={0.1}
+                near={10}
                 far={1000}
             >
                 <AdminControls enabled={adminEnabled} />

@@ -1,6 +1,8 @@
-import { Text } from "@react-three/drei";
-import { useState } from "react";
-import { useSpring, animated } from "@react-spring/three";
+import FlatText from "./FlatText";
+import { useSpring } from "@react-spring/core";
+import { useFrame } from "@react-three/fiber";
+import { useRef, useState, useCallback } from "react";
+import { Group } from "three";
 
 export interface FlatClickTextOps {
     readonly displayText: string;
@@ -21,33 +23,42 @@ export interface FlatClickTextOps {
     readonly url?: string;
 }
 
-const AnimatedText = animated(Text);
-
 export default function FlatClickText(opts: FlatClickTextOps) {
     const [isHovered, setIsHovered] = useState(false);
-    const onPointerOver = (_e: any) => {
-        setIsHovered(true);
-    };
+    const groupRef = useRef<Group>(null!);
 
-    const onPointerOut = (_e: any) => {
-        setIsHovered(false);
-    };
-
-    const onClick = (_e: any) => {
-        if (opts.url) {
-            window.open(opts.url);
-        }
-    };
-
-    const spring = useSpring({
-        from: { scale: opts.size.default },
-        to: { scale: isHovered ? opts.size.hovered : opts.size.default },
+    const { scale } = useSpring({
+        scale: isHovered ? opts.size.hovered : opts.size.default,
         config: {
-            tension: 500,
-            friction: 20,
-            precision: 0.0001,
+            tension: 800,
+            friction: 24,
+            precision: 0.001,
         },
     });
+
+    useFrame(() => {
+        groupRef.current.scale.setScalar(scale.get());
+    });
+
+    const onPointerOver = useCallback(() => {
+        setIsHovered(true);
+        document.body.style.cursor = "pointer";
+    }, []);
+
+    const onPointerOut = useCallback(() => {
+        setIsHovered(false);
+        document.body.style.cursor = "auto";
+    }, []);
+
+    const onClick = useCallback(
+        (e: any) => {
+            if (opts.url) {
+                e.stopPropagation();
+                window.open(opts.url);
+            }
+        },
+        [opts.url]
+    );
 
     return (
         <group
@@ -55,31 +66,29 @@ export default function FlatClickText(opts: FlatClickTextOps) {
             onPointerOver={onPointerOver}
             onClick={onClick}
         >
-            <AnimatedText
-                {...spring}
-                font="./JuliaMono-Regular.ttf"
-                anchorX="center"
-                anchorY="middle"
+            <group
+                ref={groupRef}
                 position={[opts.position.x, opts.position.y, opts.position.z]}
-                material-transparent={true}
-                material-roughness={0.1}
-                material-metalness={0.1}
-                castShadow={true}
-                receiveShadow={true}
+                scale={opts.size.default}
             >
-                {opts.displayText}
-                <meshStandardMaterial
-                    attach="material"
-                    color={isHovered ? opts.color.hovered : opts.color.default}
-                    opacity={opts.opacity}
-                    transparent={true}
-                    depthTest={true}
-                    roughness={0.9}
-                    metalness={0.3}
-                    displacementScale={0.1}
-                    displacementBias={0.05}
-                />
-            </AnimatedText>
+                <FlatText
+                    font="./juliaMono.json"
+                    text={opts.displayText}
+                    size={0.6}
+                    hitPadding={0.15}
+                    castShadow
+                    receiveShadow
+                >
+                    <meshStandardMaterial
+                        color={isHovered ? opts.color.hovered : opts.color.default}
+                        opacity={opts.opacity}
+                        transparent={true}
+                        depthTest={true}
+                        roughness={0.9}
+                        metalness={0.3}
+                    />
+                </FlatText>
+            </group>
         </group>
     );
 }
