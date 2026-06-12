@@ -54,13 +54,13 @@ export class ColorLerp {
     const currentColor = this.colors[this.idx];
     const nextColor = this.colors[nextIndex];
     this.currentColor.r = Math.round(
-      lerp(currentColor.r, nextColor.r, this.lerpVal)
+      lerp(currentColor.r, nextColor.r, this.lerpVal),
     );
     this.currentColor.g = Math.round(
-      lerp(currentColor.g, nextColor.g, this.lerpVal)
+      lerp(currentColor.g, nextColor.g, this.lerpVal),
     );
     this.currentColor.b = Math.round(
-      lerp(currentColor.b, nextColor.b, this.lerpVal)
+      lerp(currentColor.b, nextColor.b, this.lerpVal),
     );
     return this.currentColor;
   }

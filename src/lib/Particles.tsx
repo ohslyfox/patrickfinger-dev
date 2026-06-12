@@ -1,135 +1,148 @@
 import { Instance, Instances, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
+import { Color, MeshStandardMaterial } from "three";
 import { ColorLerp, pastelRainbowColors } from "./util/colorLerp";
 import { TrimmedColor, map, shadeColor } from "./util/util";
 
-const particlesPerLoop = 7;
-const particleDepth = 10;
-const zGapDistancePerLoop = 40;
-const numHelixes = 3;
-const particleCount = particlesPerLoop * particleDepth * numHelixes;
+const samplesPerRevolution = 7;
+const revolutions = 10;
+const helixLength = 560;
+const numHelixes = 4;
+const radiusScale = 0.06;
+const particlesPerHelix = samplesPerRevolution * revolutions;
+const particleCount = particlesPerHelix * numHelixes;
 
 const PI_2 = Math.PI * 2;
 
 interface ParticleData {
-    key: string;
-    x: number;
-    y: number;
-    z: number;
-    metadata: {
-        helix: number;
-        depth: number;
-        particle: number;
-    };
+  key: string;
+  x: number;
+  y: number;
+  z: number;
+  metadata: {
+    helix: number;
+    index: number;
+  };
 }
 
 const getStartingPoints = (): ParticleData[] => {
-    const res: ParticleData[] = [];
-    for (let i = 0; i < numHelixes; i++) {
-        // map current helix offset angle around 2pi
-        const offset = map(i, 0, numHelixes, 0, PI_2);
+  const res: ParticleData[] = [];
+  for (let h = 0; h < numHelixes; h++) {
+    const helixOffset = (h / numHelixes) * PI_2;
 
-        for (let z = 1; z <= particleDepth; z++) {
-            for (let x = 0; x < particlesPerLoop; x++) {
-                // map current particle angle around 2pi
-                const angle = map(x, 0, particlesPerLoop, 0, PI_2);
+    for (let p = 0; p < particlesPerHelix; p++) {
+      const t = p / particlesPerHelix;
+      const z = t * helixLength + helixLength / particlesPerHelix;
+      const angle = t * revolutions * PI_2 + helixOffset;
+      const radius = z * radiusScale;
 
-                // map current particle to the next loop start location
-                // i.e. approach the next z-iteration starting point
-                const approachZ = map(
-                    x,
-                    0,
-                    particlesPerLoop,
-                    z * zGapDistancePerLoop,
-                    (z + 1) * zGapDistancePerLoop
-                );
-
-                // use polar coordinates to create a 3-tuple representing a single particle's location
-                res.push({
-                    key: `${i},${z},${x}`,
-                    x: (approachZ / 15) * -Math.cos(offset + angle), // intentional negative to reflect the helix
-                    y: (approachZ / 15) * Math.sin(offset + angle),
-                    z: approachZ,
-                    metadata: {
-                        helix: i,
-                        depth: z,
-                        particle: x,
-                    },
-                });
-            }
-        }
+      res.push({
+        key: `${h},${p}`,
+        x: radius * -Math.cos(angle),
+        y: radius * Math.sin(angle),
+        z,
+        metadata: {
+          helix: h,
+          index: p,
+        },
+      });
     }
-    return res;
+  }
+  return res;
 };
 
 export const Particle = (data: ParticleData & { color: TrimmedColor }) => {
-    const ref = useRef<any>(null!);
-    useFrame((state) => {
-        const t = state.elapsed;
-        const timeScalingConstant = 1;
-        const scaleDamperConstant = 3;
-        const scalingConstant = map(data.z, 20, 300, 0.003, 0.022);
-        const intermediateScale =
-            -1 *
-            scalingConstant *
-            (1 +
-                scalingConstant * data.metadata.particle +
-                Math.sin(t / timeScalingConstant + data.metadata.depth));
-        const scale =
-            1.4 * scalingConstant + intermediateScale / scaleDamperConstant;
-
-        const shadedColor = shadeColor(data.color, map(scale, 0, 0.1, -50, 90));
-
-        ref.current.rotation.x = Math.PI / 2;
-        ref.current.rotation.y = data.metadata.particle + t / 30;
-        ref.current.scale.setScalar(scale);
-        ref.current.color.set(
-            `rgb(${shadedColor.r},${shadedColor.g},${shadedColor.b})`
-        );
-    });
-    return (
-        <group>
-            <Instance ref={ref} position={[data.x, data.y, data.z]} />
-        </group>
+  const ref = useRef<any>(null!);
+  useFrame((state) => {
+    const t = state.elapsed;
+    const timeScalingConstant = 1;
+    const scaleDamperConstant = 3;
+    const baseScale = map(data.z, 0, helixLength, 0.005, 0.02);
+    const pulse = Math.sin(t / timeScalingConstant + data.metadata.index * 0.7);
+    const scale = Math.max(
+      0.002,
+      baseScale + (pulse * baseScale) / scaleDamperConstant,
     );
+
+    const shadedColor = shadeColor(data.color, map(scale, 0, 0.1, -50, 90));
+
+    ref.current.rotation.x = Math.PI / 2;
+    ref.current.rotation.y = data.metadata.index + t / 30;
+    ref.current.scale.setScalar(scale);
+    ref.current.color.set(
+      `rgb(${shadedColor.r},${shadedColor.g},${shadedColor.b})`,
+    );
+  });
+  return (
+    <group>
+      <Instance ref={ref} position={[data.x, data.y, data.z]} />
+    </group>
+  );
 };
 
-export const Particles = () => {
-    const mesh = useRef<any>(null!);
-    const glf = useGLTF("./star-model.glb") as any;
-    const points = useMemo(() => getStartingPoints(), []);
-    const colorLerp = useMemo(() => new ColorLerp(pastelRainbowColors), []);
-    useFrame((state) => {
-        const t = state.elapsed;
-        colorLerp.step();
+interface ParticlesProps {
+  emissive?: boolean;
+}
 
-        mesh.current.rotation.z = t / 30;
+export const Particles = ({ emissive = false }: ParticlesProps) => {
+  const mesh = useRef<any>(null!);
+  const glf = useGLTF("./star-model.glb") as any;
+
+  const material = useMemo(() => {
+    if (!emissive) return glf.materials.Star;
+    const mat = new MeshStandardMaterial({
+      color: "#ffffff",
+      emissive: new Color("#ffffff"),
+      emissiveIntensity: 0.15,
+      roughness: 0.3,
+      metalness: 0.1,
     });
+    mat.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <emissivemap_fragment>",
+        `
+                #include <emissivemap_fragment>
+                #ifdef USE_INSTANCING_COLOR
+                    totalEmissiveRadiance *= vColor;
+                #endif
+                `,
+      );
+    };
+    return mat;
+  }, [emissive, glf.materials.Star]);
+  const points = useMemo(() => getStartingPoints(), []);
+  const colorLerp = useMemo(() => new ColorLerp(pastelRainbowColors), []);
+  useFrame((state) => {
+    const t = state.elapsed;
+    colorLerp.step();
 
-    // the helix is drawn from 0,0,0 towards positive-z.
-    // since the camera is positioned at 0,0,0 we must translate back towards negative-z.
-    const zTranslation = -zGapDistancePerLoop * particleDepth - 10;
+    mesh.current.rotation.z = t / 50;
+  });
 
-    return (
-        <group ref={mesh} position={[0, 0, zTranslation]} receiveShadow>
-            <Instances
-                limit={particleCount}
-                range={particleCount}
-                geometry={glf.nodes.Star.geometry}
-                material={glf.materials.Star}
-            >
-                {points.map((p) => (
-                    <Particle
-                        x={p.x}
-                        y={p.y}
-                        z={p.z}
-                        metadata={p.metadata}
-                        key={p.key}
-                        color={colorLerp.color}
-                    />
-                ))}
-            </Instances>
-        </group>
-    );
+  // the helix is drawn from 0,0,0 towards positive-z.
+  // since the camera is positioned at 0,0,0 we must translate back towards negative-z.
+  const zTranslation = -helixLength - 10;
+
+  return (
+    <group ref={mesh} position={[0, 0, zTranslation]} receiveShadow>
+      <Instances
+        limit={particleCount}
+        range={particleCount}
+        geometry={glf.nodes.Star.geometry}
+        material={material}
+      >
+        {points.map((p) => (
+          <Particle
+            x={p.x}
+            y={p.y}
+            z={p.z}
+            metadata={p.metadata}
+            key={p.key}
+            color={colorLerp.color}
+          />
+        ))}
+      </Instances>
+    </group>
+  );
 };
