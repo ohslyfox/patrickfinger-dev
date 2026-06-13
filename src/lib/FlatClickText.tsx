@@ -21,11 +21,16 @@ export interface FlatClickTextOps {
   };
   readonly opacity?: number;
   readonly url?: string;
+  // Reports hover enter/leave so the owner can decide the page cursor (it also
+  // needs to hide the cursor entirely when the text is faded out). When omitted,
+  // this text manages the cursor itself.
+  readonly onHoverChange?: (hovered: boolean) => void;
 }
 
 export default function FlatClickText(opts: FlatClickTextOps) {
   const [isHovered, setIsHovered] = useState(false);
   const groupRef = useRef<Group>(null!);
+  const { onHoverChange } = opts;
 
   const { scale } = useSpring({
     scale: isHovered ? opts.size.hovered : opts.size.default,
@@ -42,13 +47,15 @@ export default function FlatClickText(opts: FlatClickTextOps) {
 
   const onPointerOver = useCallback(() => {
     setIsHovered(true);
-    document.body.style.cursor = "pointer";
-  }, []);
+    if (onHoverChange) onHoverChange(true);
+    else document.body.style.cursor = "pointer";
+  }, [onHoverChange]);
 
   const onPointerOut = useCallback(() => {
     setIsHovered(false);
-    document.body.style.cursor = "auto";
-  }, []);
+    if (onHoverChange) onHoverChange(false);
+    else document.body.style.cursor = "auto";
+  }, [onHoverChange]);
 
   const onClick = useCallback(
     (e: any) => {
@@ -82,7 +89,10 @@ export default function FlatClickText(opts: FlatClickTextOps) {
           <meshStandardMaterial
             color={isHovered ? opts.color.hovered : opts.color.default}
             emissive={isHovered ? opts.color.hovered : opts.color.default}
-            emissiveIntensity={0.6}
+            // Fade the emissive with opacity so the bloom glow fades out together
+            // with the text — otherwise the (opacity-independent) bloom halo lingers
+            // and the text appears to blur away instead of fading.
+            emissiveIntensity={0.6 * (opts.opacity ?? 1)}
             opacity={opts.opacity}
             transparent={true}
             depthTest={true}
