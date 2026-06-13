@@ -1,5 +1,5 @@
-import { Color } from "three";
-import { TrimmedColor, lerp } from "./util";
+import { Color, SRGBColorSpace } from "three";
+import { lerp, TrimmedColor } from "./util";
 
 export const rainbowColors: TrimmedColor[] = [
   { r: 255, g: 0, b: 0 },
@@ -19,49 +19,51 @@ export const pastelRainbowColors: TrimmedColor[] = [
   { r: 255, g: 100, b: 255 },
 ];
 
-export interface ColorLerpProp {
-  colorLerp: ColorLerp;
-}
-
+/**
+ * A continuous loop through a palette. `phase` is measured in palette segments,
+ * so phase N..N+1 interpolates colors[N]..colors[N+1], wrapping at the end.
+ * Sampling is pure ({@link sampleInto} writes into a caller-owned Color), so a
+ * single instance can color many objects at different phase offsets without
+ * per-call allocations.
+ */
 export class ColorLerp {
-  private colors: TrimmedColor[];
-  private currentColor: TrimmedColor;
-  private idx: number;
-  private lerpVal: number;
-  private lerpAmt: number;
+  private readonly colors: TrimmedColor[];
+  private readonly speed: number;
+  private phaseValue: number;
 
-  constructor(colors: TrimmedColor[], lerpAmt = 0.001) {
+  constructor(colors: TrimmedColor[], speed = 0.001) {
     this.colors = colors;
-    const idx = Math.floor(Math.random() * (colors.length - 1));
-    this.currentColor = new Color(colors[idx].r, colors[idx].g, colors[idx].b);
-    this.idx = idx;
-    this.lerpVal = 0;
-    this.lerpAmt = lerpAmt;
+    this.speed = speed;
+    this.phaseValue = Math.random() * colors.length;
   }
 
-  public get color(): TrimmedColor {
-    return this.currentColor;
+  /** Current loop position, in palette segments. */
+  get phase(): number {
+    return this.phaseValue;
   }
 
-  public step(): TrimmedColor {
-    this.lerpVal = Math.min(1, this.lerpVal + this.lerpAmt);
-    if (this.lerpVal >= 1) {
-      this.idx = (this.idx + 1) % this.colors.length;
-      this.lerpVal = 0;
-    }
+  /** Advance the loop by one step. */
+  step(): void {
+    this.phaseValue = (this.phaseValue + this.speed) % this.colors.length;
+  }
 
-    const nextIndex = this.idx === this.colors.length - 1 ? 0 : this.idx + 1;
-    const currentColor = this.colors[this.idx];
-    const nextColor = this.colors[nextIndex];
-    this.currentColor.r = Math.round(
-      lerp(currentColor.r, nextColor.r, this.lerpVal),
+  /**
+   * Writes the palette color at `phase` (segments, any real value — wrapped)
+   * into `target`. The palette is authored in sRGB (like the old CSS-string
+   * path), so it's interpreted as such. Does not allocate.
+   */
+  sampleInto(phase: number, target: Color): Color {
+    const n = this.colors.length;
+    const wrapped = ((phase % n) + n) % n;
+    const i = Math.floor(wrapped);
+    const frac = wrapped - i;
+    const a = this.colors[i];
+    const b = this.colors[(i + 1) % n];
+    return target.setRGB(
+      lerp(a.r, b.r, frac) / 255,
+      lerp(a.g, b.g, frac) / 255,
+      lerp(a.b, b.b, frac) / 255,
+      SRGBColorSpace,
     );
-    this.currentColor.g = Math.round(
-      lerp(currentColor.g, nextColor.g, this.lerpVal),
-    );
-    this.currentColor.b = Math.round(
-      lerp(currentColor.b, nextColor.b, this.lerpVal),
-    );
-    return this.currentColor;
   }
 }
